@@ -1,0 +1,168 @@
+International Data Encryption Algorithm work
+
+Input: e06300a677ba7854
+Key:   0123456789abcdef0123456789abcdef
+
+Key Expansion:
+0123 4567 89ab cdef 0123 4567 
+89ab cdef cf13 579b de02 468a 
+cf13 579b de02 468a 37bc 048d 
+159e 26af 37bc 048d 159e 26af 
+1a2b 3c4d 5e6f 7809 1a2b 3c4d 
+5e6f 7809 9abc def0 1234 5678 
+9abc def0 1234 5678 e024 68ac 
+f135 79bd e024 68ac f135 79bd 
+59e2 6af3 7bc0 48d1 
+
+Since decrypting:
+74e6 950d 8440 bbf8 f135 79bd 
+ac8a 1fdc 8643 8794 e024 68ac 
+6378 edcc 2110 2cad 1234 5678 
+743e 6544 87f7 77da 1a2b 3c4d 
+1e4e a191 c3b3 e01f 159e 26af 
+b2b4 c844 d951 7a66 37bc 048d 
+963d 21fe a865 a086 de02 468a 
+3f93 30ed 3211 4f6a 0123 4567 
+35aa ba99 7655 153b 
+
+Block 1
+Round 1
+	t1 = 0e7c = e063 * 74e6
+	t2 = 95b3 = 00a6 + 950d
+	t3 = fbfa = 77ba + 8440
+	t4 = 9507 = 7854 * bbf8
+	t5 = f586 = 0e7c ^ fbfa
+	t6 = 00b4 = 95b3 ^ 9507
+	t7 = 1369 = f586 * f135
+	t8 = 141d = 00b4 + 1369
+	t9 = 84d9 = 141d * 79bd
+	ta = 9842 = 1369 + 84d9
+
+  x1 = 8aa5 = 0e7c ^ 84d9
+  x2 = 7f23 = fbfa ^ 84d9
+  x3 = 0df1 = 95b3 ^ 9842
+  x4 = 0d45 = 9507 ^ 9842
+
+Round 2
+	t1 = 3b81 = 8aa5 * ac8a
+	t2 = 9eff = 7f23 + 1fdc
+	t3 = 9434 = 0df1 + 8643
+	t4 = 07dd = 0d45 * 8794
+	t5 = afb5 = 3b81 ^ 9434
+	t6 = 9922 = 9eff ^ 07dd
+	t7 = 7b9e = afb5 * e024
+	t8 = 14c0 = 9922 + 7b9e
+	t9 = e885 = 14c0 * 68ac
+	ta = 6423 = 7b9e + e885
+
+  x1 = d304 = 3b81 ^ e885
+  x2 = 7cb1 = 9434 ^ e885
+  x3 = fadc = 9eff ^ 6423
+  x4 = 63fe = 07dd ^ 6423
+
+Round 3
+	t1 = 23e3 = d304 * 6378
+	t2 = 6a7d = 7cb1 + edcc
+	t3 = 1bec = fadc + 2110
+	t4 = 2933 = 63fe * 2cad
+	t5 = 380f = 23e3 ^ 1bec
+	t6 = 434e = 6a7d ^ 2933
+	t7 = 6d10 = 380f * 1234
+	t8 = b05e = 434e + 6d10
+	t9 = 047e = b05e * 5678
+	ta = 718e = 6d10 + 047e
+
+  x1 = 279d = 23e3 ^ 047e
+  x2 = 1f92 = 1bec ^ 047e
+  x3 = 1bf3 = 6a7d ^ 718e
+  x4 = 58bd = 2933 ^ 718e
+
+Round 4
+	t1 = aa0a = 279d * 743e
+	t2 = 84d6 = 1f92 + 6544
+	t3 = a3ea = 1bf3 + 87f7
+	t4 = 4267 = 58bd * 77da
+	t5 = 09e0 = aa0a ^ a3ea
+	t6 = c6b1 = 84d6 ^ 4267
+	t7 = 679e = 09e0 * 1a2b
+	t8 = 2e4f = c6b1 + 679e
+	t9 = 66db = 2e4f * 3c4d
+	ta = ce79 = 679e + 66db
+
+  x1 = ccd1 = aa0a ^ 66db
+  x2 = c531 = a3ea ^ 66db
+  x3 = 4aaf = 84d6 ^ ce79
+  x4 = 8c1e = 4267 ^ ce79
+
+Round 5
+	t1 = cd70 = ccd1 * 1e4e
+	t2 = 66c2 = c531 + a191
+	t3 = 0e62 = 4aaf + c3b3
+	t4 = bcf8 = 8c1e * e01f
+	t5 = c312 = cd70 ^ 0e62
+	t6 = da3a = 66c2 ^ bcf8
+	t7 = cea4 = c312 * 159e
+	t8 = a8de = da3a + cea4
+	t9 = 4a3e = a8de * 26af
+	ta = 18e2 = cea4 + 4a3e
+
+  x1 = 874e = cd70 ^ 4a3e
+  x2 = 445c = 0e62 ^ 4a3e
+  x3 = 7e20 = 66c2 ^ 18e2
+  x4 = a41a = bcf8 ^ 18e2
+
+Round 6
+	t1 = 0065 = 874e * b2b4
+	t2 = 0ca0 = 445c + c844
+	t3 = 5771 = 7e20 + d951
+	t4 = 77e7 = a41a * 7a66
+	t5 = 5714 = 0065 ^ 5771
+	t6 = 7b47 = 0ca0 ^ 77e7
+	t7 = 2bbb = 5714 * 37bc
+	t8 = a702 = 7b47 + 2bbb
+	t9 = 0122 = a702 * 048d
+	ta = 2cdd = 2bbb + 0122
+
+  x1 = 0147 = 0065 ^ 0122
+  x2 = 5653 = 5771 ^ 0122
+  x3 = 207d = 0ca0 ^ 2cdd
+  x4 = 5b3a = 77e7 ^ 2cdd
+
+Round 7
+	t1 = e72c = 0147 * 963d
+	t2 = 7851 = 5653 + 21fe
+	t3 = c8e2 = 207d + a865
+	t4 = c729 = 5b3a * a086
+	t5 = 2fce = e72c ^ c8e2
+	t6 = bf78 = 7851 ^ c729
+	t7 = da28 = 2fce * de02
+	t8 = 99a0 = bf78 + da28
+	t9 = 65ec = 99a0 * 468a
+	ta = 4014 = da28 + 65ec
+
+  x1 = 82c0 = e72c ^ 65ec
+  x2 = ad0e = c8e2 ^ 65ec
+  x3 = 3845 = 7851 ^ 4014
+  x4 = 873d = c729 ^ 4014
+
+Round 8
+	t1 = 33c8 = 82c0 * 3f93
+	t2 = ddfb = ad0e + 30ed
+	t3 = 6a56 = 3845 + 3211
+	t4 = a84f = 873d * 4f6a
+	t5 = 599e = 33c8 ^ 6a56
+	t6 = 75b4 = ddfb ^ a84f
+	t7 = de35 = 599e * 0123
+	t8 = 53e9 = 75b4 + de35
+	t9 = 7900 = 53e9 * 4567
+	ta = 5735 = de35 + 7900
+
+  x1 = 4ac8 = 33c8 ^ 7900
+  x2 = 1356 = 6a56 ^ 7900
+  x3 = 8ace = ddfb ^ 5735
+  x4 = ff7a = a84f ^ 5735
+
+
+Output:0123456789abcdef
+
+Final Output: 0123456789abcdef
