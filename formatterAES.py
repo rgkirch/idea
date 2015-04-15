@@ -1,17 +1,7 @@
-#-------------------------------------------------------------------------------
-# Name:        formatterAES.py
-# Purpose:     Formats ASCII Plaintext into 128-bit HEX Input Blocks for AES
-#
-# Author:      Christopher Carpenter
-#
-# Created:     03/28/2015
-#-------------------------------------------------------------------------------
 import binascii
 
 def main():
-
     Option = raw_input("Type 'F' for Format or 'D' for Decode:\n")
-
     if(Option == "F"):
         with open("input.txt", "w") as output:
             Input = raw_input("Enter ASCII Plaintext:\n")
