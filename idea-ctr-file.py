@@ -146,7 +146,7 @@ def encrypt_main():
 		sys.exit( "error: no input file" )
 	# try to open the key file to read from
 	try:
-		with open( "key.txt", "rb") as f:
+		with open( input_file + ".key", "rb") as f:
 			# read exactly 16 bytes for the key and 8 bytes for the iv
 			key = f.read( 16 )
 			iv = f.read (8)
@@ -253,5 +253,5 @@ except IndexError:
 
 encrypt_main()
 
-# if there is no 'key.txt' in the directory, make one, fill it with random values, and encrypt
-# if file ends with .encrypted, then decrypt
+# if no 
+
