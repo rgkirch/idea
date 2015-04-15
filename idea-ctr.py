@@ -9,14 +9,7 @@
 # multiplication mod 2**16 + 1
 # 2**16 == 0
 
-# any files listed after the invocation ie
-# $ python program.py file1 file2
-# may be iterated though as in
-# for line in fileinput.input():
-#		do stuf on line
-import fileinput
-
-# it's sys
+# use sys to check extra arguments for
 import sys
 import os
 
