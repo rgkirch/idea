@@ -5,15 +5,14 @@ try:
 except IndexError:
 	sys.exit( "No input file." )
 
-input_stream = open( name , "rb")
-other = name + ".encrypted"
-output_stream = open( other, "w")
+with open( name, "rb") as input_stream, open( name + ".encrypted", "wb") as output_stream:
+	while( 1 ):
+		f_char = input_stream.read( 1 )
+		if( f_char == "" ):
+			sys.exit( "Done" )
+		f_int = ord( f_char )
+		o_char = chr( f_int )
+		output_stream.write( o_char )
 
-while( input_stream ):
-	f_char = input_stream.read( 1 )
-	f_int = ord( f_char )
-	o_char = chr( f_int )
-	output_stream.write( o_char )
-
-input_stream.close()
-output_stream.close()
+	input_stream.close()
+	output_stream.close()
