@@ -139,7 +139,7 @@ def encrypt_main():
 	# prepend is now a function that prepends 0s to the input up to a length of y
 	prepend = lambda x, y: '0'*(y-len(x)) + x
 	is_hex_char = lambda x: x in '0123456789abcdef'
-	decimal_to_binary = lambda x: '0'*(8-len(bin(x)b[2:])) + bin(x)b[2:]
+	decimal_to_binary = lambda x: '0'*(8-len(bin(x)[2:])) + bin(x)[2:]
 
 	# check that a file(name) to encrypt was provided
 	try:
@@ -165,23 +165,17 @@ def encrypt_main():
 	# we have a key and iv whether we read it or made it
 	# open the file to read from and the file to write to
 	# the output file may be either the encrypted or decrypted data, add suffix of .idea
-	with open( input_file, "rb") as input_stream, open( output_file + ".idea", "wb") as output_stream:
+	with open( input_file, "rb") as input_stream, open( input_file + ".idea", "wb") as output_stream:
 		# convert key_ints from a list of bytes into a list of bits
-		master_key = key_expansion(reduce(lambda x,y: x+y, [decimal_to_binary(x) for x in key_ints],[]))
+		# master_key = key_expansion(reduce(lambda x,y: x+y, [decimal_to_binary(x) for x in key_ints],[]))
+		master_key = key_expansion(list("".join([decimal_to_binary(x) for x in key_ints])))
 		#master_key = key_expansion( [ decimal_to_binary( x ) for x in key_ints ] )
 
-	"""
-	for text in [data[x:x+16] for x in range(0,len(data),16)]:
-		# if we got to the last one, pad it
-		if len(text) != 16:
-			text = text + '0'*(16-len(text))
-		# convert int to hex, cut off leading '0x', prepend leading 0s
-		IV = hex(iv_int)[2:]
-		# a when hex is called on a large number, the output can look like 0xffL
-		# we have to cut out the L
-		IV = filter(is_hex_char, IV)
-		IV = prepend(IV,16)
-		# convert iv from int to hex, break into quarters, convert each quarter to int
+	# convert iv_ints to a single integer
+	IV = 0
+	for index, sub in enumerate( iv_ints[::-1] ):
+		IV += sub<<( index*8 )
+	while( 1 ):
 		iv_list = [int(IV[y:y+4],16) for y in range(0,16,4)]
 		# same for text_list
 		text_list = [int(text[y:y+4],16) for y in range(0,16,4)]
@@ -200,7 +194,6 @@ def encrypt_main():
 	# if output_stream is not stdout then we opened a file and need to close it
 	if output_stream != sys.stdout:
 		output_stream.close()
-	"""
 
 """
 try:
