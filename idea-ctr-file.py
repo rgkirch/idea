@@ -199,7 +199,10 @@ def encrypt_main():
 			# convert otp_list to single bytes instead of pairs
 			otp_byte_sized = [ f(x) for x in otp_list for f in [ lambda z: (z>>8)%(1<<8), lambda z: z%(1<<8) ] ]
 			for pad_byte in otp_byte_sized:
-				output_stream.write( chr( pad_byte ^ ord( input_stream.read( 1 ) ) ) )
+				l = input_stream.read( 1 )
+				if l == '':
+					sys.exit( "" )
+				output_stream.write( chr( pad_byte ^ ord( l ) % 256 ) )
 			# xor the input block and the otp_list
 
 				#output_stream.write(prepend(hex(int(bitstream ^ plaintext))[2:],4))
