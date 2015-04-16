@@ -14,6 +14,8 @@
 
 # use sys to check extra arguments for
 import sys
+# create random keys
+import random
 import os
 
 # We must expand the 128 bit input to provide 56, 16 bit keys
@@ -44,19 +46,20 @@ def key_expansion(master_key):
 	key[49], key[50] = key[50], key[49]
 	return key
 
-def decimal_to_binary(decimal):
+"""
+def decimal_to_binary( decimal ):
 	# int() can take a string and a base and will return an integer
 	# bin() can take an integer and returns a string of 0b followed by 0s and 
-	b = bin(int(hx,16))
+	b = bin( int( decimal, 10 ) )
 	# cut off the 0b
 	b = b[2:]
-	# length * 4 because each character represents 4 bits
+	# each integer represents 8 bits
 	# bin() does not display leading 0s
-	padlen = length*4-len(b)
+	padlen = 8-len(b)
 	pad = "0"*padlen
 	# list('strng') returns ['s','t','r','n','g']
 	return list(pad + b)
-
+"""
 """
 def bits_to_int(bits, length=4):
 	if len(bits)%length != 0:
@@ -110,8 +113,6 @@ def encrypt(M,K):
 	return M
 
 def read_data(f):
-	"""This function yields the next 16 chars of the file with each iteration."""
-	hex_chars = '0123456789abcdef'
 	while 1:
 		d = f.read(16)
 		d = filter(lambda x: x in hex_chars, d)
@@ -138,6 +139,7 @@ def encrypt_main():
 	# prepend is now a function that prepends 0s to the input up to a length of y
 	prepend = lambda x, y: '0'*(y-len(x)) + x
 	is_hex_char = lambda x: x in '0123456789abcdef'
+	decimal_to_binary = lambda x: '0'*(8-len(bin(x)b[2:])) + bin(x)b[2:]
 
 	# check that a file(name) to encrypt was provided
 	try:
@@ -146,70 +148,29 @@ def encrypt_main():
 		sys.exit( "error: no input file" )
 	# try to open the key file to read from
 	try:
-		with open( input_file + ".key", "rb") as f:
-			# read exactly 16 bytes for the key and 8 bytes for the iv
-			key = f.read( 16 )
-			iv = f.read (8)
-	except EnvironmentError:
-		# if there is a problem and we don't have the key, exit
-		sys.exit( "could not open key.txt" )
-	# error if too few bytes in key
-	if len( key ) + len( iv ) != 16 + 8:
-		sys.exit( "invalid key.txt" )
-	with open( input_file, "rb") as input_stream, open( output_file + ".encrypted", "wb") as output_stream:
-		
-	
-	
-	### INPUT_VALIDATION ###
-	if len(MK) != 32:
-		print >> sys.stderr, "key needs to be 32 long not " + str(len(MK))
-	# if filter(lambda x: x not in hex_chars, MK):
-		# print >> sys.stderr, "key not all hex chars"
-		# print >> sys.stderr, filter(lambda x: x not in hex_chars, MK)
-		# print >> sys.stderr, "see non hex chars above"
-
-	master_key = key_expansion(hex_to_bits(MK))
-		
-	if 'key.txt' in os.listdir(os.getcwd()):
-		pass
-	else:
-		iv_hex = raw_input("initialization vector:\n").strip()
-		iv_hex = filter(is_hex_char, iv_hex)
-
-	### INPUT_VALIDATION ###
-	if len(iv_hex) != 16:
-		print >> sys.stderr, "iv needs to be 16 long not " + str(len(iv_hex))
-	# if filter(lambda x: x not in hex_chars, iv_hex):
-		# print >> sys.stderr, "iv not all hex chars:"
-		# print >> sys.stderr, filter(lambda x: x not in hex_chars, iv_hex)
-		# print >> sys.stderr, "see non hex chars above"
-
-
-	# iv is 16 hex
-	iv_int = int(iv_hex, 16)
-	# the first argument after the name of this file is used as input
-	# if no argument is provided then the program will read from stdin
-	try:
-		input_stream = open(sys.argv[1], "rb")
+		key_file = sys.argv[2]
+		with open( key_file, "rb" ) as f:
+			key_ints = [ ord( x ) for x in list( f.read( 16 ) ) ]
+			iv_ints = [ ord( x ) for x in list( f.read( 8 ) ) ]
+			# error if too few bytes in key
+			if len( key_ints ) + len( iv_ints ) < 16 + 8:
+				sys.exit( "error: key file too small" )
+	# if key file not provided, make one
 	except IndexError:
-		input_stream = sys.stdin
-	# the second argument after the name of this file is used as output
-	# if no argument is provided then the program will print to stdout
-	try:
-		output_stream = open(sys.argv[2], "w")
-	except IndexError:
-		output_stream = sys.stdout
-	# that is totally the most impressive part of this code (to me (right now))
+		key_ints = [ random.randint( 0, 255 ) for _ in range( 16 ) ]
+		iv_ints = [ random.randint( 0, 255 ) for _ in range( 8 ) ]
+		with open( input_file + ".key", "wb" ) as key_file:
+			key_file.write( "".join( [ chr( x ) for x in key_ints ] ) )
+			key_file.write( "".join( [ chr( x ) for x in iv_ints ] ) )
+	# we have a key and iv whether we read it or made it
+	# open the file to read from and the file to write to
+	# the output file may be either the encrypted or decrypted data, add suffix of .idea
+	with open( input_file, "rb") as input_stream, open( output_file + ".idea", "wb") as output_stream:
+		# convert key_ints from a list of bytes into a list of bits
+		master_key = key_expansion(reduce(lambda x,y: x+y, [decimal_to_binary(x) for x in key_ints],[]))
+		#master_key = key_expansion( [ decimal_to_binary( x ) for x in key_ints ] )
 
-	data = input_stream.read()
-	data = filter(is_hex_char, data)
-
-
-	# read chunks of 16 hex from generator
-	# FOR CHUNK IN [DATA[X:X+16] FOR X IN RANGE(0,LEN(DATA), 16)]:
-	# read_data is a generator and so is iterable
-	# read_data returns chunks of 16 for each call of next()
-	# for text in read_data(input_stream):
+	"""
 	for text in [data[x:x+16] for x in range(0,len(data),16)]:
 		# if we got to the last one, pad it
 		if len(text) != 16:
@@ -239,6 +200,7 @@ def encrypt_main():
 	# if output_stream is not stdout then we opened a file and need to close it
 	if output_stream != sys.stdout:
 		output_stream.close()
+	"""
 
 """
 try:
@@ -253,5 +215,8 @@ except IndexError:
 
 encrypt_main()
 
-# if no 
+# python program one two
+# operate on one using the keys from two
+# python program one
+# make a key file and use that to encrypt one
 
