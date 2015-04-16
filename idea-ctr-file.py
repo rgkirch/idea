@@ -46,33 +46,6 @@ def key_expansion(master_key):
 	key[49], key[50] = key[50], key[49]
 	return key
 
-"""
-def decimal_to_binary( decimal ):
-	# int() can take a string and a base and will return an integer
-	# bin() can take an integer and returns a string of 0b followed by 0s and 
-	b = bin( int( decimal, 10 ) )
-	# cut off the 0b
-	b = b[2:]
-	# each integer represents 8 bits
-	# bin() does not display leading 0s
-	padlen = 8-len(b)
-	pad = "0"*padlen
-	# list('strng') returns ['s','t','r','n','g']
-	return list(pad + b)
-"""
-"""
-def bits_to_int(bits, length=4):
-	if len(bits)%length != 0:
-	   print "error, in func 'bit_to_int' input must be multiple of", length
-	nibs = [bits[x:x+length] for x in range(0,len(bits),length)]
-	data = []
-	for nib in nibs:
-	   s = "".join(str(x) for x in nib)
-	   i = int(s,2)
-	   data.append(i)
-	return data
-"""
-
 def odd_round(X, K):
 	"""Half multiply, half add, 100% switcheroo."""
 	# replace 0 with 2 to the power of 16
@@ -112,28 +85,6 @@ def encrypt(M,K):
 			ki += 4
 	return M
 
-def read_data(f):
-	while 1:
-		d = f.read(16)
-		d = filter(lambda x: x in hex_chars, d)
-		if not d:
-			break
-		if len(d) < 16:
-			d = d + '0'*(16-len(d))
-		### INPUT_VALIDATION ###
-		# if filter(lambda x: x not in hex_chars, d):
-			# print >> sys.stderr, "fileinput not all hex chars"
-			# print >> sys.stderr, filter(lambda x: x not in hex_chars, d)
-			# print >> sys.stderr, "see non hex chars above"
-		yield d
-
-def read_key():
-		key_by_byte = [ ord( c ) for c in line ]
-		f_int = ord( f_char )
-		o_char = chr( f_int )
-		output_stream.write( o_char )
-		
-	
 def encrypt_main():
 	hex_chars = '0123456789abcdef'
 	# prepend is now a function that prepends 0s to the input up to a length of y
@@ -210,9 +161,4 @@ def encrypt_main():
 			IV = (IV + 1) % (2**64)
 
 encrypt_main()
-
-# python program one two
-# operate on one using the keys from two
-# python program one
-# make a key file and use that to encrypt one
 
