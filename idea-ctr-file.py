@@ -157,8 +157,13 @@ def encrypt_main():
 				sys.exit( "error: key file too small" )
 	# if key file not provided, make one
 	except IndexError:
-		key_ints = [ random.randint( 0, 255 ) for _ in range( 16 ) ]
-		iv_ints = [ random.randint( 0, 255 ) for _ in range( 8 ) ]
+		# this fills key and the iv with bytes
+		key_ints = [ random.randint( 0, (1<<8)-1 ) for _ in range( 16 ) ]
+		iv_ints = [ random.randint( 0, (1<<8)-1 ) for _ in range( 8 ) ]
+		# both the key and the iv have bytes written to them because the data
+		# is saved to the file one byte at a time as characters
+		# the data in key_ints is later expanded into the master key
+		# the data from iv_ints is modified, each pair is combined to make four 16 bit chunks
 		with open( input_file + ".key", "wb" ) as key_file:
 			key_file.write( "".join( [ chr( x ) for x in key_ints ] ) )
 			key_file.write( "".join( [ chr( x ) for x in iv_ints ] ) )
@@ -171,40 +176,35 @@ def encrypt_main():
 		master_key = key_expansion(list("".join([decimal_to_binary(x) for x in key_ints])))
 		#master_key = key_expansion( [ decimal_to_binary( x ) for x in key_ints ] )
 
-	# convert iv_ints to a single integer
-	IV = 0
-	for index, sub in enumerate( iv_ints[::-1] ):
-		IV += sub<<( index*8 )
-	while( 1 ):
-		iv_list = [int(IV[y:y+4],16) for y in range(0,16,4)]
-		# same for text_list
-		text_list = [int(text[y:y+4],16) for y in range(0,16,4)]
-		# encrypting the iv and key creates the otp_list (One Time Pad)
-		# opt_list is a list of four ints
-		otp_list = encrypt(iv_list, master_key)
-		# xor the input block and the otp_list
-		for bitstream, plaintext in zip(otp_list, text_list):
-			output_stream.write(prepend(hex(int(bitstream ^ plaintext))[2:],4))
-		# increment the iv and mod it
-		iv_int = int((iv_int + 1) % 2**16)
-	# cleaning up
-	# if input_stream is not stdin then we opened a file and need to close it
-	if input_stream != sys.stdin:
-		input_stream.close()
-	# if output_stream is not stdout then we opened a file and need to close it
-	if output_stream != sys.stdout:
-		output_stream.close()
+		# convert iv_ints to a single integer
+		IV = 0
+		for index, sub in enumerate( iv_ints[::-1] ):
+			IV += sub<<( index*8 )
+		# begin main loop
+		#for _ in range ( 1 ):
+		while( 1 ):
+			iv_list = []
+			IV_temp = IV
+			# better than while(IV) because I get leading 0s
+			for _ in range( 4 ):
+				# mod to chop off last 16 bits of iv
+				iv_list.append( IV_temp % (1<<16) )
+				# shift iv over to get different bits next time
+				IV_temp = IV_temp>>16
+			# reverse the list
+			iv_list = iv_list[::-1]
+			# encrypting the iv and key creates the otp_list (One Time Pad)
+			# opt_list is a list of four ints
+			otp_list = encrypt(iv_list, master_key)
+			# convert otp_list to single bytes instead of pairs
+			otp_byte_sized = [ f(x) for x in otp_list for f in [ lambda z: (z>>8)%(1<<8), lambda z: z%(1<<8) ] ]
+			for pad_byte in otp_byte_sized:
+				output_stream.write( chr( pad_byte ^ ord( input_stream.read( 1 ) ) ) )
+			# xor the input block and the otp_list
 
-"""
-try:
-	input_stream = open(sys.argv[1], "rb")
-except IndexError:
-	input_stream = sys.stdin
-try:
-	output_stream = open(sys.argv[2], "w")
-except IndexError:
-	output_stream = sys.stdout
-"""
+				#output_stream.write(prepend(hex(int(bitstream ^ plaintext))[2:],4))
+			# increment the iv and mod it
+			IV = (IV + 1) % (2**64)
 
 encrypt_main()
 
