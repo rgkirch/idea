@@ -1,5 +1,7 @@
 Richard Kirchofer
 idea-ctr-file.py
+https://github.com/rgkirch/idea
+$ git clone git@github.com:rgkirch/idea.git
 
 $ cd run
 
