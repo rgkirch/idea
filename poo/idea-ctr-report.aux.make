@@ -8,4 +8,3 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Addition}{3}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Multiplication}{3}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}In Theory}{3}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}In Practice}{3}}
