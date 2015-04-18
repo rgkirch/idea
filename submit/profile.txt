@@ -1,0 +1,177 @@
+Wrote profile results to idea-ctr-file.py.lprof
+Timer unit: 1e-06 s
+
+Total time: 0.000143 s
+File: idea-ctr-file.py
+Function: key_expansion at line 24
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    24                                           @profile
+    25                                           def key_expansion(master_key):
+    26                                           	# "Expands the '1010...' 128 bit string input into a list of 52 integers in the range 0-2**16 (16bits), [1,3,5,9,...]"
+    27                                           	"""Expands the ['1','0','1'] 128 bit list of strings into a list of 52 integers in the range 0-2**16 (16bits), [1,3,5,9,...]"""
+    28                                           	# The 128 bit key is expanded into 52 16-bit keys.
+    29                                           
+    30                                           	# double the string so we can walk off and wrap around
+    31         1            2      2.0      1.4  	twice = master_key*2
+    32         1            1      1.0      0.7  	temp_key = []
+    33         1            1      1.0      0.7  	start = 0
+    34                                           	# starting at 0, generate eight 16-bit chunks
+    35         8            6      0.8      4.2  	while len(temp_key) < 52:
+    36                                           		# add 8 keys to the list
+    37        63           42      0.7     29.4  		temp_key += [twice[x:x+16] for x in range(start,start+8*16,16)]
+    38         7            5      0.7      3.5  		start += 25
+    39         7            5      0.7      3.5  		start = start % 128
+    40                                           	# chop off the end of temp_key, it will be longer than 52 because I add 8 at a
+    41                                           	# time and only 4 need to be added on the last go
+    42         1            2      2.0      1.4  	temp_key = temp_key[:52]
+    43                                           	# joins the bits together into a string of bits ['1','0'] -> '10'
+    44                                           	# converts it to an int, reading it as a base 2 number
+    45        53           77      1.5     53.8  	key = [int("".join(bits),2) for bits in temp_key]
+    46                                           	# keys 50 and 51 are swapped
+    47         1            1      1.0      0.7  	key[49], key[50] = key[50], key[49]
+    48         1            1      1.0      0.7  	return key
+
+Total time: 6.27581 s
+File: idea-ctr-file.py
+Function: odd_round at line 50
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    50                                           @profile
+    51                                           def odd_round(X, K):
+    52                                           	"""Half multiply, half add, 100% switcheroo."""
+    53                                           	# replace 0 with 2 to the power of 16
+    54                                           	# multiply then mod 2**16+1
+    55   1179657       933110      0.8     14.9  	mult = lambda x,y: ((x if x != 0 else 2**16)*(y if y != 0 else 2**16)) % (2**16+1)
+    56                                           	# 2**16 maps to 0
+    57   1179657       790064      0.7     12.6  	add = lambda x,y: (x+y) % (2**16)
+    58                                           	# print mult(X[0], K[0]), "=", X[0], "*", K[0]
+    59                                           	# print add(X[2], K[2]), "=", X[2], "+", K[2]
+    60                                           	# print add(X[1], K[1]), "=", X[1], "+", K[1]
+    61                                           	# print mult(X[3], K[3]), "=", X[3], "*", K[3]
+    62   1179657      4552631      3.9     72.5  	return [mult(X[0], K[0]), add(X[2], K[2]), add(X[1], K[1]), mult(X[3], K[3])]
+
+Total time: 9.76146 s
+File: idea-ctr-file.py
+Function: even_round at line 64
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    64                                           @profile
+    65                                           def even_round(X, K):
+    66                                           	"""This is it's own inverse. f(f(x)) = x"""
+    67                                           	# see diagram not attached
+    68   1048584       855401      0.8      8.8  	mult = lambda x,y: ((x if x != 0 else 2**16)*(y if y != 0 else 2**16)) % (2**16+1)
+    69   1048584       759864      0.7      7.8  	add = lambda x,y: (x+y) % (2**16)
+    70   1048584       910766      0.9      9.3  	Yin = X[0] ^ X[1]
+    71   1048584       778121      0.7      8.0  	Zin = X[2] ^ X[3]
+    72   1048584      3159529      3.0     32.4  	Yout = mult(add(mult(Yin, K[0]), Zin), K[1])
+    73   1048584      2063170      2.0     21.1  	Zout = add(mult(Yin, K[0]), Yout)
+    74   1048584      1234607      1.2     12.6  	return [X[0] ^ Yout, X[1] ^ Yout, X[2] ^ Zout, X[3] ^ Zout]
+
+Total time: 36.8115 s
+File: idea-ctr-file.py
+Function: encrypt at line 76
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    76                                           @profile
+    77                                           def encrypt(M,K):
+    78                                           	"""encrypts one block of 64 bits (4, 16-bit chunks)"""
+    79                                           	# M = [int, int, int, int]
+    80                                           	# K = [int, int, int, int, int, int, int, int...]
+    81                                           	# key undex
+    82    131073        55890      0.4      0.2  	ki = 0
+    83   2359314       973355      0.4      2.6  	for rnd in range(1,18):
+    84   2228241      1076347      0.5      2.9  		if rnd % 2 == 0:
+    85   1048584     19975614     19.1     54.3  			M = even_round(M, K[ki:ki+2])
+    86   1048584       532186      0.5      1.4  			ki += 2
+    87                                           		else:
+    88   1179657     13544564     11.5     36.8  			M = odd_round(M, K[ki:ki+4])
+    89   1179657       605817      0.5      1.6  			ki += 4
+    90    131073        47689      0.4      0.1  	return M
+
+Total time: 58.6987 s
+File: idea-ctr-file.py
+Function: encrypt_main at line 92
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    92                                           @profile
+    93                                           def encrypt_main():
+    94         1            3      3.0      0.0  	hex_chars = '0123456789abcdef'
+    95                                           	# prepend is now a function that prepends 0s to the input up to a length of y
+    96         1            2      2.0      0.0  	prepend = lambda x, y: '0'*(y-len(x)) + x
+    97         1            1      1.0      0.0  	is_hex_char = lambda x: x in '0123456789abcdef'
+    98         1            2      2.0      0.0  	decimal_to_binary = lambda x: '0'*(8-len(bin(x)[2:])) + bin(x)[2:]
+    99                                           
+   100                                           	# check that a file(name) to encrypt was provided
+   101         1            2      2.0      0.0  	try:
+   102         1            2      2.0      0.0  		input_file = sys.argv[1]
+   103                                           	except IndexError:
+   104                                           		sys.exit( "error: no input file" )
+   105                                           	# try to open the key file to read from
+   106         1            2      2.0      0.0  	try:
+   107         1            5      5.0      0.0  		key_file = sys.argv[2]
+   108                                           		with open( key_file, "rb" ) as f:
+   109                                           			key_ints = [ ord( x ) for x in list( f.read( 16 ) ) ]
+   110                                           			iv_ints = [ ord( x ) for x in list( f.read( 8 ) ) ]
+   111                                           			# error if too few bytes in key
+   112                                           			if len( key_ints ) + len( iv_ints ) < 16 + 8:
+   113                                           				sys.exit( "error: key file too small" )
+   114                                           	# if key file not provided, make one
+   115         1            3      3.0      0.0  	except IndexError:
+   116                                           		# this fills key and the iv with bytes
+   117        17          109      6.4      0.0  		key_ints = [ random.randint( 0, (1<<8)-1 ) for _ in range( 16 ) ]
+   118         9           47      5.2      0.0  		iv_ints = [ random.randint( 0, (1<<8)-1 ) for _ in range( 8 ) ]
+   119                                           		# both the key and the iv have bytes written to them because the data
+   120                                           		# is saved to the file one byte at a time as characters
+   121                                           		# the data in key_ints is later expanded into the master key
+   122                                           		# the data from iv_ints is modified, each pair is combined to make four 16 bit chunks
+   123         1           56     56.0      0.0  		with open( input_file + ".key", "wb" ) as key_file:
+   124        17           48      2.8      0.0  			key_file.write( "".join( [ chr( x ) for x in key_ints ] ) )
+   125         9           78      8.7      0.0  			key_file.write( "".join( [ chr( x ) for x in iv_ints ] ) )
+   126                                           	# we have a key and iv whether we read it or made it
+   127                                           	# open the file to read from and the file to write to
+   128                                           	# the output file may be either the encrypted or decrypted data, add suffix of .idea
+   129         1          231    231.0      0.0  	with open( input_file, "rb") as input_stream, open( input_file + ".idea", "wb") as output_stream:
+   130                                           		# convert key_ints from a list of bytes into a list of bits
+   131                                           		# master_key = key_expansion(reduce(lambda x,y: x+y, [decimal_to_binary(x) for x in key_ints],[]))
+   132        17          281     16.5      0.0  		master_key = key_expansion(list("".join([decimal_to_binary(x) for x in key_ints])))
+   133                                           		#master_key = key_expansion( [ decimal_to_binary( x ) for x in key_ints ] )
+   134                                           
+   135                                           		# convert iv_ints to a single integer
+   136         1            3      3.0      0.0  		IV = 0
+   137         9           24      2.7      0.0  		for index, sub in enumerate( iv_ints[::-1] ):
+   138         8           27      3.4      0.0  			IV += sub<<( index*8 )
+   139                                           		# begin main loop
+   140                                           		#for _ in range ( 1 ):
+   141         1            2      2.0      0.0  		while( 1 ):
+   142    131073       261936      2.0      0.4  			iv_list = []
+   143    131073       245483      1.9      0.4  			IV_temp = IV
+   144                                           			# better than while(IV) because I get leading 0s
+   145    655365      1275104      1.9      2.2  			for _ in range( 4 ):
+   146                                           				# mod to chop off last 16 bits of iv
+   147    524292      1109848      2.1      1.9  				iv_list.append( IV_temp % (1<<16) )
+   148                                           				# shift iv over to get different bits next time
+   149    524292      1032416      2.0      1.8  				IV_temp = IV_temp>>16
+   150                                           			# reverse the list
+   151    131073       295768      2.3      0.5  			iv_list = iv_list[::-1]
+   152                                           			# encrypting the iv and key creates the otp_list (One Time Pad)
+   153                                           			# opt_list is a list of four ints
+   154    131073     40516472    309.1     69.0  			otp_list = encrypt(iv_list, master_key)
+   155                                           			# convert otp_list to single bytes instead of pairs
+   156   1703949      3956318      2.3      6.7  			otp_byte_sized = [ f(x) for x in otp_list for f in [ lambda z: (z>>8)%(1<<8), lambda z: z%(1<<8) ] ]
+   157   1179649      2335399      2.0      4.0  			for pad_byte in otp_byte_sized:
+   158   1048577      2368457      2.3      4.0  				l = input_stream.read( 1 )
+   159   1048577      1985543      1.9      3.4  				if l == '':
+   160         1           74     74.0      0.0  					sys.exit( "" )
+   161   1048576      3028547      2.9      5.2  				output_stream.write( chr( pad_byte ^ ord( l ) % 256 ) )
+   162                                           			# xor the input block and the otp_list
+   163                                           
+   164                                           				#output_stream.write(prepend(hex(int(bitstream ^ plaintext))[2:],4))
+   165                                           			# increment the iv and mod it
+   166    131072       286384      2.2      0.5  			IV = (IV + 1) % (2**64)
+
